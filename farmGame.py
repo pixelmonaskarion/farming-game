@@ -1,7 +1,9 @@
 import sprite
 import pygame
 import grid
+import time
 import random as r
+import asyncio
 from pygame.locals import (
     K_UP,
     K_DOWN,
@@ -14,9 +16,12 @@ from pygame.locals import (
     K_d,
     KEYDOWN,
     QUIT,
+    K_f
 )
 
-sprite.init(inputFont="Minecraft")
+import farm_client
+
+sprite.init(inputFont="Minecraft", size=10)
 
 screen = sprite.setScreen(1440, 760)
 player = sprite.Player(screen, (255,255,255), 50, 0, 0, False, 5)
@@ -24,6 +29,7 @@ player.realX = player.x
 player.realY = player.y
 scrollX = 0
 scrollY = 0
+lock = 0
 hotbarSlot = sprite.newImage('pointer.png')
 yellowPointer = sprite.newImage('yellowPointer.png')
 selectedSlot = 1
@@ -34,11 +40,12 @@ blockIDs = {
     3: 'soil',
     4: 'path',
     5: 'grass',
-    6: 'tallGrass'
+    6: 'tallGrass',
+    7: 'lettuce'
 }
-plantsTag = [1,2]
-plantTimes = [10000,5000]
-plantStages = [5,2]
+plantsTag = [1,2,7]
+plantTimes = [5000,5000,1]
+plantStages = [5,2,2]
 class Block():
     def __init__(self,ID, lvl=1):
         self.ID = ID
@@ -62,6 +69,7 @@ class DroppedItem():
     def __init__(self,x,y,ID):
         self.x = x + r.randint(-10,10)
         self.y = y + r.randint(-10,10)
+        self.degrees = r.randint(0,360)
         self.ID = ID
     def pickUp(self):
         done = False
@@ -76,57 +84,78 @@ class DroppedItem():
                 if inventory[i+1] == 0:
                     inventory[i+1] = Item(self.ID, 1)
                     break
+
+class Mob():
+    def __init__(self, ID, x, y):
+        self.ID = ID
+        self.x = x
+        self.y = y
+        self.Sx = 0
+        self.Sy = 0
+        self.degrees = 0
+    def ai(self):
+        if self.ID == 1:
+            if r.randint(0,100) == 0:
+                ran = r.randint(0,3)
+                if ran == 0:
+                    self.Sx += 50
+                    self.degrees = 180
+                if ran == 1:
+                    self.Sx -= 50
+                    self.degrees = 0
+                if ran == 2:
+                    self.Sy += 50
+                    self.degrees = 270
+                if ran == 3:
+                    self.Sy -= 50
+                    self.degrees = 90
+            if self.Sx != 0:
+                self.x += (self.Sx/abs(self.Sx))*2
+                self.Sx -= (self.Sx/abs(self.Sx))*2
+            if self.Sy != 0:
+                self.y += (self.Sy/abs(self.Sy))*2
+                self.Sy -= (self.Sy/abs(self.Sy))*2
+            if self.x > 1440:
+                self.x = 1440
+            if self.x < 0:
+                self.x = 0
+            if self.y > 760:
+                self.y = 760
+            if self.y < 0:
+                self.y = 0
             
-
-Map = grid.Grid(100,100)
-for C in range(100):
-    for R in range(100):
-        ran = r.randint(0,5)
-        if ran == 0:
-            Map.change(R,C,"bushstarter")
-        elif ran == 1:
-            Map.change(R,C,"grassStarter")
-        else:
-            Map.change(R,C, Block(5))
-
-
-        
-
-
-def changeStarters():
-    for i in range(len(Map.list)):
-        if Map.list[i] == "bushstarter":
-            Map.list[i] = Block(2, 2)
-            if r.randint(1,5) == 1:
-                if r.randint(1,2) == 1:
-                    modifier = [-1,-10][r.randint(0,1)]
-                    Map.list[1+modifier] = "bushstarter"
-                    changeStarters()
-                else:
-                    modifier = [-1,-10][r.randint(0,1)]
-                    Map.list[1-modifier] = "bushstarter"
-    for i in range(len(Map.list)):
-        if Map.list[i] == "grassStarter":
-            Map.list[i] = Block(6)
-            if r.randint(1,5) == 1:
-                if r.randint(1,2) == 1:
-                    modifier = [-1,-10][r.randint(0,1)]
-                    Map.list[1+modifier] = "grassStarter"
-                    changeStarters()
-                else:
-                    modifier = [-1,-10][r.randint(0,1)]
-                    Map.list[1-modifier] = "grassStarter"
-
-changeStarters()
 scrollX = 0
 scrollY = 0
 
 itemIDs = {
     1: "grassSeeds",
     2: "hoe",
-    3: 'berrySeeds'
+    3: 'berrySeeds',
+    4: 'lettuce'
 
 }
+def GetMapAsync():
+    global lock
+    if lock != 1:
+        lock += 1
+        farm_client.GetMapAsync().add_done_callback(getMapCallBack)
+
+def getMapCallBack(f):
+    global lock
+    lock -= 1
+    setUpMap(f.result())
+
+def GetMapSync():
+    result = farm_client.GetMapSync()
+    setUpMap(result)
+
+def getItems():
+    global Items
+    Items = setUpItems(farm_client.GetItem())
+
+def changeMap(r, c, changeto):
+    #print('r:', r, 'c:', c)
+    farm_client.changeStuff([farm_client.farmServerMethods_pb2.MapUpdate(r=r,c=c, changedto=farm_client.farmServerMethods_pb2.Block(ID=changeto.ID, Lvl=changeto.lvl))])
 
 class Item():
     def __init__(self, ID, count):
@@ -154,13 +183,19 @@ blockTextures = {
     'bush2': sprite.newImage('bush2.png'),
     "path": sprite.newImage('path.png'),
     'soil': sprite.newImage('soil.png'),
-    'tallGrass': sprite.newImage('tallGrass.png')
+    'tallGrass': sprite.newImage('tallGrass.png'),
+    'lettuce1': sprite.newImage('lettuce1.png'),
+    'lettuce2': sprite.newImage('lettuce2.png')
+}
+
+entityImages = {
+    1: sprite.newImage("Entity.png")
 }
 
 
 inventory = {
     1: Item(2,1),
-    2: Item(3,5),
+    2: Item(4,5),
     3: 0,
     4: 0,
     5: 0,
@@ -175,8 +210,25 @@ inventory = {
 itemImages = {
     'grassSeeds': sprite.newImage('grassSeeds.png'),
     'hoe': sprite.newImage('hoe.png'),
-    'berrySeeds': sprite.newImage('berrySeeds.png')
+    'berrySeeds': sprite.newImage('berrySeeds.png'),
+    'lettuce': sprite.newImage('lettuceItem.png')
 }
+
+def setUpMap(inputMap):
+    global Map
+    local_map = grid.Grid(100,100)
+    local_map.list = []
+    for i in range(len(inputMap.block)):
+        local_map.list.append(Block(inputMap.block[i].block.ID, inputMap.block[i].block.Lvl))
+    #print('done setting up map for {} blocks'.format(len(inputMap.block)))
+    Map = local_map
+    return Map
+
+def setUpItems(inputList):
+    Items = []
+    for i in range(len(inputList.item)):
+        Items.append(DroppedItem(inputList.item[i].x, inputList.item[i].y, inputList.item[i].ID))
+    return Items
 
 def drawHotbar():
     for x in range(9):
@@ -241,7 +293,7 @@ def drawBackground():
                 else:
                     image.image = blockTextures[blockIDs[Map.get(R,C).ID]]
                 image.updateImage()
-                Map.get(R,C).tick()
+                #sprite.text("R: " + str(R) + " C: " + str(C), image.x-25, image.y)
                 #sprite.text(str(Map.get(R,C).ticksfromstart), image.x, image.y)
                 Mx, My = pygame.mouse.get_pos()
                 if round(Mx) > image.x - 25 and round(Mx) < image.x + 25:
@@ -257,10 +309,10 @@ def drawBackground():
                             if not inventory[selectedSlot] == 0:
                                 if itemIDs[inventory[selectedSlot].ID] == 'hoe':
                                     if Map.get(R,C).ID == 5:
-                                        Map.change(R,C,Block(3))
+                                        changeMap(R, C, Block(3, 1))
                                 if itemIDs[inventory[selectedSlot].ID] == 'grassSeeds':
                                     if Map.get(R,C).ID == 3:
-                                        Map.change(R,C,Block(1))
+                                        changeMap(R, C, Block(1, 1))
                                         inventory[selectedSlot].used()
                                         if inventory[selectedSlot].count < 1:
                                             inventory[selectedSlot] = 0
@@ -268,32 +320,52 @@ def drawBackground():
                                 if stop == False:
                                     if itemIDs[inventory[selectedSlot].ID] == 'berrySeeds':
                                         if Map.get(R,C).ID == 5:
-                                            Map.change(R,C,Block(2))
+                                            changeMap(R, C, Block(2, 1))
                                             inventory[selectedSlot].used()
                                             if inventory[selectedSlot].count < 1:
                                                 inventory[selectedSlot] = 0
-                            if pygame.mouse.get_pressed()[2] == 1:
-                                if Map.get(R,C).ID == 2:
-                                    if Map.get(R,C).lvl == 2:
-                                        Map.get(R,C).lvl = 1
-                                        Items.append(DroppedItem(C*50, R*50, 3))
-                            if pygame.mouse.get_pressed()[0] == 1:
-                                if Map.get(R,C).ID == 6:
-                                    Map.get(R,C).ID = 5
-                                    Items.append(DroppedItem(C*50, R*50, 1))
+                                    if itemIDs[inventory[selectedSlot].ID] == 'lettuce':
+                                        if Map.get(R,C).ID == 5:
+                                            changeMap(R, C, Block(7, 1))
+                                            inventory[selectedSlot].used()
+                                            if inventory[selectedSlot].count < 1:
+                                                inventory[selectedSlot] = 0
+                        #print("right click!")
+                        if pygame.mouse.get_pressed()[2] == 1:
+                            #print("right click!")
+                            if Map.get(R,C).ID == 2:
+                                if Map.get(R,C).lvl == 2:
+                                    changeMap(R, C, Block(2, 1))
+                                    #Items.append(DroppedItem(C*50, R*50, 3))
+                        if pygame.mouse.get_pressed()[0] == 1:
+                            if Map.get(R,C).ID == 6:
+                                changeMap(R, C, Block(5, 1))
+                                #Items.append(DroppedItem(C*50, R*50, 1))
+                            if Map.get(R,C).ID == 7:
+                                changeMap(R, C, Block(5, 1))
+                                #Items.append(DroppedItem(C*50, R*50, 4))
+                                #Items.append(DroppedItem(C*50, R*50, 4))
+            #Map.get(R,C).tick()
 
-def itemLoop():
+def EntityLoop():
     deleteItems = []
     for item in Items:
-        image = sprite.Sprite(screen, (0,0,0), 50, item.x-scrollX+25, item.y-scrollY+25)
+        image = sprite.Player(screen, (0,0,0), 50, item.x-scrollX+25, item.y-scrollY+25, True, 0, item.degrees)
         image.image = itemImages[itemIDs[item.ID]]
-        image.updateImage()
+        image.update()
+        item.degrees += 1
         if round(player.x) > image.x - 50 and round(player.x) < image.x + 50:
             if round(player.y) > image.y - 50 and round(player.y) < image.y + 50:
                 item.pickUp()
                 deleteItems.append(item)
     for item in deleteItems:
         Items.remove(item)
+    for mob in Mobs:
+        image = sprite.Player(screen, (0,0,0), 50, mob.x-scrollX+25, mob.y-scrollY+25, True, 0, mob.degrees)
+        image.image = entityImages[mob.ID]
+        image.update()
+        mob.ai()
+    
 
 def move(keys):
     if keys[K_RIGHT] or keys[K_d]:
@@ -304,24 +376,35 @@ def move(keys):
         player.realY -= 5
     if keys[K_DOWN] or keys[K_s]:
         player.realY += 5
-    
-while True:
-    drawBackground()
-    sprite.run()
-    move(sprite.getKeys())
-    itemLoop()
-    scrollX = player.realX
-    scrollY = player.realY
-    player.x = player.realX -scrollX + 720
-    player.y = player.realY -scrollY + 380
-    if scrollX > 1440:
-        scrollX = 1440
-    if scrollX < 0:
-        scrollX = 0
-    if scrollY > 760:
-        scrollY = 760
-    if scrollY < 0:
-        scrollY = 0
-    player.update()
-    drawHotbar()
-    pygame.display.flip()
+
+async def Main(): 
+    global scrollX, scrollY, player
+    GetMapSync()
+    getItems()
+    ticks = 0
+    while True:
+        drawBackground()
+        sprite.run()
+        move(sprite.getKeys())
+        #EntityLoop()
+        scrollX += (player.realX - scrollX)/10
+        scrollY += (player.realY - scrollY)/10
+        player.x = player.realX -scrollX + 720
+        player.y = player.realY -scrollY + 380
+        if scrollX > 1440:
+            scrollX = 1440
+        if scrollX < 0:
+            scrollX = 0
+        if scrollY > 760:
+            scrollY = 760
+        if scrollY < 0:
+            scrollY = 0
+        player.update()
+        drawHotbar()
+        pygame.display.flip()
+        time.sleep(1/60)
+        ticks += 1
+        if ticks % 6 == 0:
+            GetMapAsync()
+
+asyncio.run(Main())

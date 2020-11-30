@@ -1,0 +1,56 @@
+syntax = "proto3";
+
+package farming;
+import "google/protobuf/empty.proto";
+
+service Farming {
+
+  rpc GetMap(google.protobuf.Empty) returns (Map) {}
+
+  rpc GetItems(google.protobuf.Empty) returns (Items) {}
+
+  rpc changeStuff(stream MapUpdate) returns (stream Map) {}
+
+}
+
+
+message Map {
+  repeated SpecificBlock block = 1;
+}
+
+message Items {
+  repeated Item item = 1;
+}
+
+message Item {
+   int32 ID = 1;
+   int32 x = 2;
+   int32 y = 3;
+}
+
+message SpecificBlock {
+    Block block = 1;
+    int32 r = 2;
+    int32 c = 3;
+}
+
+message Block {
+    int32 ID = 1;
+    int32 Lvl = 2;
+}
+
+
+
+
+message Action {
+    int32 r = 1;
+    int32 c = 2;
+}
+
+message MapUpdate {
+    int32 r = 1;
+    int32 c = 2;
+    Block changedto = 3;
+}
+
+
