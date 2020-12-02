@@ -24,10 +24,21 @@ import farmServerMethods_pb2_grpc
 import random as r
 import grid
 
+import google
+
+import time
+
 plantsTag = [1,2,7]
 plantTimes = [5000,5000,100 ]
 plantStages = [5,2,2]
+Players = []
 Items = []
+
+class Player():
+    def __init__(self, name, x, y):
+        self.name = name
+        self.x = x
+        self.y = y
 
 class Block():
     def __init__(self,ID, lvl=1):
@@ -114,6 +125,7 @@ changeStarters()
 class FarmServer(farmServerMethods_pb2_grpc.FarmingServicer):
 
     def GetMap(self, request, context):
+        #print('GOT MAP')
         BlocksFromMap = []
         R = 0
         C = 0
@@ -124,54 +136,97 @@ class FarmServer(farmServerMethods_pb2_grpc.FarmingServicer):
                 C = 0
                 R += 1
         return farmServerMethods_pb2.Map(block=BlocksFromMap)
+    
+    def SendPlayer(self, request, context):
+        Players.append(Player(request.name, request.x, request.y))
+        return google.protobuf.empty_pb2.Empty()
+    
+    def PlayerLeave(self, request, context):
+        for check in Players:
+            if request.name == check.name:
+                Players.remove(check)
+                break
+        return google.protobuf.empty_pb2.Empty()
+    
+    def GetPlayers(self, request, context):
+        #print('GOT MAP')
+        protoPlayer = []
+        for player in Players:
+            protoPlayer.append(farmServerMethods_pb2.Player(x=player.x,y=player.y, name=player.name))
+        return farmServerMethods_pb2.Players(Player=protoPlayer)
 
 
-    def changeStuff(self, request_iterator, context):
+    def changeStuff(self, changed, context):
         global Map
-        for changed in request_iterator:
-            print("got", changed.changedto.ID, "current block is", Map.get(changed.r, changed.c).ID)
-            print("changing R: "+str(changed.r), 'C: ' + str(changed.c))
-            ID = Map.get(changed.r, changed.c).ID
-            if ID == 5 and changed.changedto.ID == 3:
-                Map.change(changed.r, changed.c, Block(3))
-                print("action till grass")
-            elif ID == 5 and changed.changedto.ID == 2:
-                Map.change(changed.r, changed.c, Block(2))
-                print("action plant bush")
-            elif ID == 2 and changed.changedto.ID == 2:
-                Map.change(changed.r, changed.c, Block(2))
-                Items.append(DroppedItem(C*50, R*50, 3))
-                print("action get berries")
-            elif ID == 7 and changed.changedto.ID == 5:
-                print("action break lettuce")
-                Map.change(changed.r, changed.c, Block(5))
-                Items.append(DroppedItem(C*50, R*50, 4))
-            elif ID == 3 and changed.changedto.ID == 1:
-                Map.change(changed.r, changed.c, Block(1))
-                print("action plant grass")
-            elif ID == 6 and changed.changedto.ID == 5:
-                Map.change(changed.r, changed.c, Block(5))
-                print("action break grass")
-                Items.append(DroppedItem(C*50, R*50, 1))
-            else:
-                print("no action found :/")
-            MapOfBlocks = []
-            for r in range(100):
-                for c in range(100):
-                    MapOfBlocks.append(farmServerMethods_pb2.SpecificBlock(r=r,c=c,block=farmServerMethods_pb2.Block(ID=Map.get(r,c).ID,Lvl=Map.get(r,c).lvl)))
-            yield farmServerMethods_pb2.Map(block=MapOfBlocks)
+        print("got", changed.changedto.ID, "current block is", Map.get(changed.r, changed.c).ID)
+        print("changing R: "+str(changed.r), 'C: ' + str(changed.c))
+        ID = Map.get(changed.r, changed.c).ID
+        if ID == 5 and changed.changedto.ID == 3:
+            Map.change(changed.r, changed.c, Block(3))
+            print("action till grass")
+        elif ID == 5 and changed.changedto.ID == 2:
+            Map.change(changed.r, changed.c, Block(2))
+            print("action plant bush")
+        elif ID == 2 and changed.changedto.ID == 2:
+            Map.change(changed.r, changed.c, Block(2))
+            Items.append(DroppedItem(changed.c*50, changed.r*50, 3))
+            print("action get berries")
+        elif ID == 7 and changed.changedto.ID == 5:
+            print("action break lettuce")
+            Map.change(changed.r, changed.c, Block(5))
+            Items.append(DroppedItem(changed.c*50, changed.r*50, 4))
+        elif ID == 3 and changed.changedto.ID == 1:
+            Map.change(changed.r, changed.c, Block(1))
+            print("action plant grass")
+        elif ID == 6 and changed.changedto.ID == 5:
+            Map.change(changed.r, changed.c, Block(5))
+            print("action break grass")
+            Items.append(DroppedItem(changed.c*50, changed.r*50, 1))
+        else:
+            print("no action found :/")
+        MapOfBlocks = []
+        for r in range(100):
+            for c in range(100):
+                MapOfBlocks.append(farmServerMethods_pb2.SpecificBlock(r=r,c=c,block=farmServerMethods_pb2.Block(ID=Map.get(r,c).ID,Lvl=Map.get(r,c).lvl)))
+        return farmServerMethods_pb2.Map(block=MapOfBlocks)
     def GetItems(self, request, context):
+        #print('GOT ITEMS')
         ItemList = []
         for item in Items:
-            item = farmServerMethods_pb2.Item(ID=item.ID, x=item.x, y=item.y)
+            Item = farmServerMethods_pb2.Item(ID=item.ID, x=item.x, y=item.y, ro=item.degrees)
+            ItemList.append(Item)
+            print("x:", item.x, "y:", item.y)
         return farmServerMethods_pb2.Items(item=ItemList)
+    
+    def DeleteItems(self, request, context):
+        global Items
+        print("SIZE OF ITEMS BEFORE", len(Items))
+        deleteItem = []
+        y = request.y
+        x = request.x
+        ID = request.ID
+        for check in Items:
+            print(x, y, check.x, check.y)
+            if ID == check.ID and x == check.x and y == check.y:
+                print('found item to be deleted')
+                deleteItem.append(check)
+                break
+        for item in deleteItem:
+            Items.remove(item)
+        print("SIZE OF ITEMS AFTER", len(Items))
+        return request
 
 def serve():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     farmServerMethods_pb2_grpc.add_FarmingServicer_to_server(FarmServer(), server)
     server.add_insecure_port('[::]:50051')
     server.start()
-    server.wait_for_termination()
+    while True:
+        for item in Items:
+            item.degrees += 1
+        time.sleep(1/60)
+
+
 
 
 if __name__ == '__main__':

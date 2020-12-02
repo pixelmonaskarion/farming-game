@@ -39,7 +39,7 @@ def generate_messages(message):
 
 def changeStuff(change=[farmServerMethods_pb2.MapUpdate(r=1,c=1, changedto=farmServerMethods_pb2.Block(ID=1, Lvl=1))]):
     startTime = time.perf_counter_ns()
-    responses = stub.changeStuff(generate_messages(change))
+    response = stub.changeStuff(change)
     Map = []
     for response in responses:
         Map.append(response)
@@ -53,9 +53,35 @@ def GetMapAsync():
     #response = response_future.result()
     return response_future
 
+def GetItemsAsync():
+    response_future = stub.GetItems.future(google.protobuf.empty_pb2.Empty())
+    #response = response_future.result()
+    return response_future
+
+def GetPlayersAsync():
+    response_future = stub.GetPlayers.future(google.protobuf.empty_pb2.Empty())
+    #response = response_future.result()
+    return response_future
+
+def ChangeStuffAsync(change=[farmServerMethods_pb2.MapUpdate(r=1,c=1, changedto=farmServerMethods_pb2.Block(ID=1, Lvl=1))]):
+    Map_future = stub.changeStuff.future(change)
+    #print(Map.block)
+    #print("sending change request")
+    #response = response_future.result()
+    return Map_future
+
 def GetMapSync():
     startTime = time.perf_counter_ns()
     response_future = GetMapAsync()
+    response = response_future.result()
+    print("took %f seconds" % ((time.perf_counter_ns() - startTime)/1.0e9))
+    if (time.perf_counter_ns() - startTime)/1.0e9 > 1/60:
+        print("not good enough :(")
+    return response
+
+def GetItemsSync():
+    startTime = time.perf_counter_ns()
+    response_future = GetItemsAsync()
     response = response_future.result()
     print("took %f seconds" % ((time.perf_counter_ns() - startTime)/1.0e9))
     if (time.perf_counter_ns() - startTime)/1.0e9 > 1/60:
@@ -69,6 +95,21 @@ def GetItem():
     if (time.perf_counter_ns() - startTime)/1.0e9 > 1/60:
         print("not good enough :(")
     return response
+
+def DeleteItemAsync(Item):
+    response_future = stub.DeleteItems.future(farmServerMethods_pb2.Item(x=Item.x, y=Item.y, ID=Item.ID))
+    #response = response_future.result()
+    return response_future
+
+def SendPlayerAsync(player):
+    response_future = stub.SendPlayer.future(farmServerMethods_pb2.Player(x=player.x, y=player.y, name=player.name))
+    #response = response_future.result()
+    return response_future
+
+def PlayerLeave(player):
+    response_future = stub.SendPlayer.future(farmServerMethods_pb2.Player(x=player.x, y=player.y, name=player.name))
+    #response = response_future.result()
+    return response_future
 
 
 

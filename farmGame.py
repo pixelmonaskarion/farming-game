@@ -21,6 +21,10 @@ from pygame.locals import (
 
 import farm_client
 
+import google.protobuf.json_format as json_format
+
+import os
+
 sprite.init(inputFont="Minecraft", size=10)
 
 screen = sprite.setScreen(1440, 760)
@@ -30,10 +34,15 @@ player.realY = player.y
 scrollX = 0
 scrollY = 0
 lock = 0
+Itemlock = 0
+Playerlock = 0
+PlayerSendlock = 0
+name = os.environ.get("USER")
 hotbarSlot = sprite.newImage('pointer.png')
 yellowPointer = sprite.newImage('yellowPointer.png')
 selectedSlot = 1
 Items = []
+pygame.display.set_caption("Farming Game")
 blockIDs = {
     1: 'Plantgrass',
     2: 'bush',
@@ -66,11 +75,12 @@ class Block():
                     else:
                         self.ticksfromstart -= 1
 class DroppedItem():
-    def __init__(self,x,y,ID):
-        self.x = x + r.randint(-10,10)
-        self.y = y + r.randint(-10,10)
-        self.degrees = r.randint(0,360)
+    def __init__(self,x,y,ID, degrees=r.randint(0,360)):
+        self.x = x
+        self.y = y
+        self.degrees = degrees
         self.ID = ID
+        #print("x:", self.x, "y:", self.y)
     def pickUp(self):
         done = False
         for i in range(8):
@@ -85,44 +95,12 @@ class DroppedItem():
                     inventory[i+1] = Item(self.ID, 1)
                     break
 
-class Mob():
-    def __init__(self, ID, x, y):
-        self.ID = ID
+class Player():
+    def __init__(self, name, x, y):
+        self.name = name
         self.x = x
         self.y = y
-        self.Sx = 0
-        self.Sy = 0
-        self.degrees = 0
-    def ai(self):
-        if self.ID == 1:
-            if r.randint(0,100) == 0:
-                ran = r.randint(0,3)
-                if ran == 0:
-                    self.Sx += 50
-                    self.degrees = 180
-                if ran == 1:
-                    self.Sx -= 50
-                    self.degrees = 0
-                if ran == 2:
-                    self.Sy += 50
-                    self.degrees = 270
-                if ran == 3:
-                    self.Sy -= 50
-                    self.degrees = 90
-            if self.Sx != 0:
-                self.x += (self.Sx/abs(self.Sx))*2
-                self.Sx -= (self.Sx/abs(self.Sx))*2
-            if self.Sy != 0:
-                self.y += (self.Sy/abs(self.Sy))*2
-                self.Sy -= (self.Sy/abs(self.Sy))*2
-            if self.x > 1440:
-                self.x = 1440
-            if self.x < 0:
-                self.x = 0
-            if self.y > 760:
-                self.y = 760
-            if self.y < 0:
-                self.y = 0
+
             
 scrollX = 0
 scrollY = 0
@@ -140,22 +118,66 @@ def GetMapAsync():
         lock += 1
         farm_client.GetMapAsync().add_done_callback(getMapCallBack)
 
+def GetPlayersAsync():
+    global Playerlock
+    if Playerlock != 1:
+        Playerlock += 1
+        farm_client.GetPlayersAsync().add_done_callback(getPlayersCallBack)
+
+def SendPlayerAsync():
+    global PlayerSendlock
+    if PlayerSendlock != 1:
+        PlayerSendlock += 1
+        farm_client.SendPlayerAsync(Player(name, int(scrollX), int(scrollY))).add_done_callback(SendPlayerCallBack)
+
 def getMapCallBack(f):
     global lock
     lock -= 1
     setUpMap(f.result())
 
+def getPlayersCallBack(f):
+    global Playerlock
+    Playerlock -= 1
+    setUpPlayers(f.result())
+
+def SendPlayerCallBack(f):
+    global PlayerSendlock
+    PlayerSendlock -= 1
+
+def setUpPlayers(inputList):
+    Players = []
+    for player in range(len(inputList)):
+        Players.append(Player(player.name, player.x, player.y))
+        #print('x:', inputList.item[i].x, 'y:', inputList.item[i].y)
+    #print("Items:", Items)
+    return Players
+
+def getItemCallBack(f):
+    global Items
+    global Itemlock
+    Itemlock -= 1
+    Items = setUpItems(f.result())
+
 def GetMapSync():
     result = farm_client.GetMapSync()
     setUpMap(result)
 
-def getItems():
-    global Items
-    Items = setUpItems(farm_client.GetItem())
+def GetItemsAsync():
+    global Itemlock
+    if Itemlock != 1:
+        Itemlock += 1
+        farm_client.GetItemsAsync().add_done_callback(getItemCallBack)
 
-def changeMap(r, c, changeto):
+def DeleteItemAsync(Item):
+    farm_client.DeleteItemAsync(Item).add_done_callback(DeleteItemCallBack)
+
+def DeleteItemCallBack(future):
+    DroppedItem(future.x, future.y, future.ID).pickUp()
+
+def changeMap(r, c, changeto):#Async
     #print('r:', r, 'c:', c)
-    farm_client.changeStuff([farm_client.farmServerMethods_pb2.MapUpdate(r=r,c=c, changedto=farm_client.farmServerMethods_pb2.Block(ID=changeto.ID, Lvl=changeto.lvl))])
+    Map.change(r, c, changeto)
+    farm_client.ChangeStuffAsync(farm_client.farmServerMethods_pb2.MapUpdate(r=r,c=c, changedto=farm_client.farmServerMethods_pb2.Block(ID=changeto.ID, Lvl=changeto.lvl)))
 
 class Item():
     def __init__(self, ID, count):
@@ -228,6 +250,8 @@ def setUpItems(inputList):
     Items = []
     for i in range(len(inputList.item)):
         Items.append(DroppedItem(inputList.item[i].x, inputList.item[i].y, inputList.item[i].ID))
+        #print('x:', inputList.item[i].x, 'y:', inputList.item[i].y)
+    #print("Items:", Items)
     return Items
 
 def drawHotbar():
@@ -359,34 +383,30 @@ def EntityLoop():
                 item.pickUp()
                 deleteItems.append(item)
     for item in deleteItems:
+        DeleteItemAsync(item)
         Items.remove(item)
-    for mob in Mobs:
-        image = sprite.Player(screen, (0,0,0), 50, mob.x-scrollX+25, mob.y-scrollY+25, True, 0, mob.degrees)
-        image.image = entityImages[mob.ID]
-        image.update()
-        mob.ai()
     
 
 def move(keys):
     if keys[K_RIGHT] or keys[K_d]:
-        player.realX += 5
+        player.realX += 7
     if keys[K_LEFT] or keys[K_a]:
-        player.realX -= 5
+        player.realX -= 7
     if keys[K_UP] or keys[K_w]:
-        player.realY -= 5
+        player.realY -= 7
     if keys[K_DOWN] or keys[K_s]:
-        player.realY += 5
+        player.realY += 7
 
 async def Main(): 
     global scrollX, scrollY, player
     GetMapSync()
-    getItems()
+    GetItemsAsync()
     ticks = 0
     while True:
         drawBackground()
         sprite.run()
         move(sprite.getKeys())
-        #EntityLoop()
+        EntityLoop()
         scrollX += (player.realX - scrollX)/10
         scrollY += (player.realY - scrollY)/10
         player.x = player.realX -scrollX + 720
@@ -406,5 +426,10 @@ async def Main():
         ticks += 1
         if ticks % 6 == 0:
             GetMapAsync()
+            GetItemsAsync()
+            GetPlayersAsync()
+            SendPlayerAsync()
 
 asyncio.run(Main())
+print("goodbye")
+farm_client.PlayerLeave(Player(name, scrollX, scrollY)).result()

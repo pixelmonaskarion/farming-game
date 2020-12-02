@@ -20,7 +20,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   syntax='proto3',
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_pb=b'\n\x17\x66\x61rmServerMethods.proto\x12\x07\x66\x61rming\x1a\x1bgoogle/protobuf/empty.proto\",\n\x03Map\x12%\n\x05\x62lock\x18\x01 \x03(\x0b\x32\x16.farming.SpecificBlock\"$\n\x05Items\x12\x1b\n\x04item\x18\x01 \x03(\x0b\x32\r.farming.Item\"(\n\x04Item\x12\n\n\x02ID\x18\x01 \x01(\x05\x12\t\n\x01x\x18\x02 \x01(\x05\x12\t\n\x01y\x18\x03 \x01(\x05\"D\n\rSpecificBlock\x12\x1d\n\x05\x62lock\x18\x01 \x01(\x0b\x32\x0e.farming.Block\x12\t\n\x01r\x18\x02 \x01(\x05\x12\t\n\x01\x63\x18\x03 \x01(\x05\" \n\x05\x42lock\x12\n\n\x02ID\x18\x01 \x01(\x05\x12\x0b\n\x03Lvl\x18\x02 \x01(\x05\"\x1e\n\x06\x41\x63tion\x12\t\n\x01r\x18\x01 \x01(\x05\x12\t\n\x01\x63\x18\x02 \x01(\x05\"D\n\tMapUpdate\x12\t\n\x01r\x18\x01 \x01(\x05\x12\t\n\x01\x63\x18\x02 \x01(\x05\x12!\n\tchangedto\x18\x03 \x01(\x0b\x32\x0e.farming.Block2\xa8\x01\n\x07\x46\x61rming\x12\x30\n\x06GetMap\x12\x16.google.protobuf.Empty\x1a\x0c.farming.Map\"\x00\x12\x34\n\x08GetItems\x12\x16.google.protobuf.Empty\x1a\x0e.farming.Items\"\x00\x12\x35\n\x0b\x63hangeStuff\x12\x12.farming.MapUpdate\x1a\x0c.farming.Map\"\x00(\x01\x30\x01\x62\x06proto3'
+  serialized_pb=b'\n\x17\x66\x61rmServerMethods.proto\x12\x07\x66\x61rming\x1a\x1bgoogle/protobuf/empty.proto\",\n\x03Map\x12%\n\x05\x62lock\x18\x01 \x03(\x0b\x32\x16.farming.SpecificBlock\"$\n\x05Items\x12\x1b\n\x04item\x18\x01 \x03(\x0b\x32\r.farming.Item\"*\n\x07Players\x12\x1f\n\x06player\x18\x01 \x03(\x0b\x32\x0f.farming.Player\",\n\x06Player\x12\t\n\x01x\x18\x01 \x01(\x05\x12\t\n\x01y\x18\x02 \x01(\x05\x12\x0c\n\x04name\x18\x03 \x01(\t\"D\n\rSpecificBlock\x12\x1d\n\x05\x62lock\x18\x01 \x01(\x0b\x32\x0e.farming.Block\x12\t\n\x01r\x18\x02 \x01(\x05\x12\t\n\x01\x63\x18\x03 \x01(\x05\" \n\x05\x42lock\x12\n\n\x02ID\x18\x01 \x01(\x05\x12\x0b\n\x03Lvl\x18\x02 \x01(\x05\"4\n\x04Item\x12\t\n\x01x\x18\x01 \x01(\x05\x12\t\n\x01y\x18\x02 \x01(\x05\x12\n\n\x02ID\x18\x03 \x01(\x05\x12\n\n\x02ro\x18\x04 \x01(\x05\"\x1e\n\x06\x41\x63tion\x12\t\n\x01r\x18\x01 \x01(\x05\x12\t\n\x01\x63\x18\x02 \x01(\x05\"D\n\tMapUpdate\x12\t\n\x01r\x18\x01 \x01(\x05\x12\t\n\x01\x63\x18\x02 \x01(\x05\x12!\n\tchangedto\x18\x03 \x01(\x0b\x32\x0e.farming.Block2\x80\x03\n\x07\x46\x61rming\x12\x30\n\x06GetMap\x12\x16.google.protobuf.Empty\x1a\x0c.farming.Map\"\x00\x12\x34\n\x08GetItems\x12\x16.google.protobuf.Empty\x1a\x0e.farming.Items\"\x00\x12\x38\n\nGetPlayers\x12\x16.google.protobuf.Empty\x1a\x10.farming.Players\"\x00\x12\x37\n\nSendPlayer\x12\x0f.farming.Player\x1a\x16.google.protobuf.Empty\"\x00\x12\x38\n\x0bPlayerLeave\x12\x0f.farming.Player\x1a\x16.google.protobuf.Empty\"\x00\x12-\n\x0b\x44\x65leteItems\x12\r.farming.Item\x1a\r.farming.Item\"\x00\x12\x31\n\x0b\x63hangeStuff\x12\x12.farming.MapUpdate\x1a\x0c.farming.Map\"\x00\x62\x06proto3'
   ,
   dependencies=[google_dot_protobuf_dot_empty__pb2.DESCRIPTOR,])
 
@@ -91,32 +91,18 @@ _ITEMS = _descriptor.Descriptor(
 )
 
 
-_ITEM = _descriptor.Descriptor(
-  name='Item',
-  full_name='farming.Item',
+_PLAYERS = _descriptor.Descriptor(
+  name='Players',
+  full_name='farming.Players',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
-      name='ID', full_name='farming.Item.ID', index=0,
-      number=1, type=5, cpp_type=1, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
-    _descriptor.FieldDescriptor(
-      name='x', full_name='farming.Item.x', index=1,
-      number=2, type=5, cpp_type=1, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
-    _descriptor.FieldDescriptor(
-      name='y', full_name='farming.Item.y', index=2,
-      number=3, type=5, cpp_type=1, label=1,
-      has_default_value=False, default_value=0,
+      name='player', full_name='farming.Players.player', index=0,
+      number=1, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
@@ -133,7 +119,53 @@ _ITEM = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=149,
-  serialized_end=189,
+  serialized_end=191,
+)
+
+
+_PLAYER = _descriptor.Descriptor(
+  name='Player',
+  full_name='farming.Player',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  create_key=_descriptor._internal_create_key,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='x', full_name='farming.Player.x', index=0,
+      number=1, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='y', full_name='farming.Player.y', index=1,
+      number=2, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='name', full_name='farming.Player.name', index=2,
+      number=3, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=193,
+  serialized_end=237,
 )
 
 
@@ -178,8 +210,8 @@ _SPECIFICBLOCK = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=191,
-  serialized_end=259,
+  serialized_start=239,
+  serialized_end=307,
 )
 
 
@@ -217,8 +249,61 @@ _BLOCK = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=261,
-  serialized_end=293,
+  serialized_start=309,
+  serialized_end=341,
+)
+
+
+_ITEM = _descriptor.Descriptor(
+  name='Item',
+  full_name='farming.Item',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  create_key=_descriptor._internal_create_key,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='x', full_name='farming.Item.x', index=0,
+      number=1, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='y', full_name='farming.Item.y', index=1,
+      number=2, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='ID', full_name='farming.Item.ID', index=2,
+      number=3, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='ro', full_name='farming.Item.ro', index=3,
+      number=4, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=343,
+  serialized_end=395,
 )
 
 
@@ -256,8 +341,8 @@ _ACTION = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=295,
-  serialized_end=325,
+  serialized_start=397,
+  serialized_end=427,
 )
 
 
@@ -302,19 +387,22 @@ _MAPUPDATE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=327,
-  serialized_end=395,
+  serialized_start=429,
+  serialized_end=497,
 )
 
 _MAP.fields_by_name['block'].message_type = _SPECIFICBLOCK
 _ITEMS.fields_by_name['item'].message_type = _ITEM
+_PLAYERS.fields_by_name['player'].message_type = _PLAYER
 _SPECIFICBLOCK.fields_by_name['block'].message_type = _BLOCK
 _MAPUPDATE.fields_by_name['changedto'].message_type = _BLOCK
 DESCRIPTOR.message_types_by_name['Map'] = _MAP
 DESCRIPTOR.message_types_by_name['Items'] = _ITEMS
-DESCRIPTOR.message_types_by_name['Item'] = _ITEM
+DESCRIPTOR.message_types_by_name['Players'] = _PLAYERS
+DESCRIPTOR.message_types_by_name['Player'] = _PLAYER
 DESCRIPTOR.message_types_by_name['SpecificBlock'] = _SPECIFICBLOCK
 DESCRIPTOR.message_types_by_name['Block'] = _BLOCK
+DESCRIPTOR.message_types_by_name['Item'] = _ITEM
 DESCRIPTOR.message_types_by_name['Action'] = _ACTION
 DESCRIPTOR.message_types_by_name['MapUpdate'] = _MAPUPDATE
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
@@ -333,12 +421,19 @@ Items = _reflection.GeneratedProtocolMessageType('Items', (_message.Message,), {
   })
 _sym_db.RegisterMessage(Items)
 
-Item = _reflection.GeneratedProtocolMessageType('Item', (_message.Message,), {
-  'DESCRIPTOR' : _ITEM,
+Players = _reflection.GeneratedProtocolMessageType('Players', (_message.Message,), {
+  'DESCRIPTOR' : _PLAYERS,
   '__module__' : 'farmServerMethods_pb2'
-  # @@protoc_insertion_point(class_scope:farming.Item)
+  # @@protoc_insertion_point(class_scope:farming.Players)
   })
-_sym_db.RegisterMessage(Item)
+_sym_db.RegisterMessage(Players)
+
+Player = _reflection.GeneratedProtocolMessageType('Player', (_message.Message,), {
+  'DESCRIPTOR' : _PLAYER,
+  '__module__' : 'farmServerMethods_pb2'
+  # @@protoc_insertion_point(class_scope:farming.Player)
+  })
+_sym_db.RegisterMessage(Player)
 
 SpecificBlock = _reflection.GeneratedProtocolMessageType('SpecificBlock', (_message.Message,), {
   'DESCRIPTOR' : _SPECIFICBLOCK,
@@ -353,6 +448,13 @@ Block = _reflection.GeneratedProtocolMessageType('Block', (_message.Message,), {
   # @@protoc_insertion_point(class_scope:farming.Block)
   })
 _sym_db.RegisterMessage(Block)
+
+Item = _reflection.GeneratedProtocolMessageType('Item', (_message.Message,), {
+  'DESCRIPTOR' : _ITEM,
+  '__module__' : 'farmServerMethods_pb2'
+  # @@protoc_insertion_point(class_scope:farming.Item)
+  })
+_sym_db.RegisterMessage(Item)
 
 Action = _reflection.GeneratedProtocolMessageType('Action', (_message.Message,), {
   'DESCRIPTOR' : _ACTION,
@@ -377,8 +479,8 @@ _FARMING = _descriptor.ServiceDescriptor(
   index=0,
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_start=398,
-  serialized_end=566,
+  serialized_start=500,
+  serialized_end=884,
   methods=[
   _descriptor.MethodDescriptor(
     name='GetMap',
@@ -401,9 +503,49 @@ _FARMING = _descriptor.ServiceDescriptor(
     create_key=_descriptor._internal_create_key,
   ),
   _descriptor.MethodDescriptor(
+    name='GetPlayers',
+    full_name='farming.Farming.GetPlayers',
+    index=2,
+    containing_service=None,
+    input_type=google_dot_protobuf_dot_empty__pb2._EMPTY,
+    output_type=_PLAYERS,
+    serialized_options=None,
+    create_key=_descriptor._internal_create_key,
+  ),
+  _descriptor.MethodDescriptor(
+    name='SendPlayer',
+    full_name='farming.Farming.SendPlayer',
+    index=3,
+    containing_service=None,
+    input_type=_PLAYER,
+    output_type=google_dot_protobuf_dot_empty__pb2._EMPTY,
+    serialized_options=None,
+    create_key=_descriptor._internal_create_key,
+  ),
+  _descriptor.MethodDescriptor(
+    name='PlayerLeave',
+    full_name='farming.Farming.PlayerLeave',
+    index=4,
+    containing_service=None,
+    input_type=_PLAYER,
+    output_type=google_dot_protobuf_dot_empty__pb2._EMPTY,
+    serialized_options=None,
+    create_key=_descriptor._internal_create_key,
+  ),
+  _descriptor.MethodDescriptor(
+    name='DeleteItems',
+    full_name='farming.Farming.DeleteItems',
+    index=5,
+    containing_service=None,
+    input_type=_ITEM,
+    output_type=_ITEM,
+    serialized_options=None,
+    create_key=_descriptor._internal_create_key,
+  ),
+  _descriptor.MethodDescriptor(
     name='changeStuff',
     full_name='farming.Farming.changeStuff',
-    index=2,
+    index=6,
     containing_service=None,
     input_type=_MAPUPDATE,
     output_type=_MAP,
