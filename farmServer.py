@@ -138,7 +138,15 @@ class FarmServer(farmServerMethods_pb2_grpc.FarmingServicer):
         return farmServerMethods_pb2.Map(block=BlocksFromMap)
     
     def SendPlayer(self, request, context):
-        Players.append(Player(request.name, request.x, request.y))
+        stop = False
+        for i in range(len(Players)):
+            player = Players[i]
+            if player.name == request.name:
+                stop = True
+                Players[i].x = request.x
+                Players[i].y = request.y
+        if stop == False:
+            Players.append(Player(request.name, request.x, request.y))
         return google.protobuf.empty_pb2.Empty()
     
     def PlayerLeave(self, request, context):
@@ -153,7 +161,7 @@ class FarmServer(farmServerMethods_pb2_grpc.FarmingServicer):
         protoPlayer = []
         for player in Players:
             protoPlayer.append(farmServerMethods_pb2.Player(x=player.x,y=player.y, name=player.name))
-        return farmServerMethods_pb2.Players(Player=protoPlayer)
+        return farmServerMethods_pb2.Players(player=protoPlayer)
 
 
     def changeStuff(self, changed, context):

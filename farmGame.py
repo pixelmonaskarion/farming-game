@@ -25,7 +25,7 @@ import google.protobuf.json_format as json_format
 
 import os
 
-sprite.init(inputFont="Minecraft", size=10)
+sprite.init(inputFont="Minecraft")
 
 screen = sprite.setScreen(1440, 760)
 player = sprite.Player(screen, (255,255,255), 50, 0, 0, False, 5)
@@ -42,6 +42,7 @@ hotbarSlot = sprite.newImage('pointer.png')
 yellowPointer = sprite.newImage('yellowPointer.png')
 selectedSlot = 1
 Items = []
+Players = []
 pygame.display.set_caption("Farming Game")
 blockIDs = {
     1: 'Plantgrass',
@@ -145,9 +146,10 @@ def SendPlayerCallBack(f):
     PlayerSendlock -= 1
 
 def setUpPlayers(inputList):
-    Players = []
-    for player in range(len(inputList)):
-        Players.append(Player(player.name, player.x, player.y))
+    print('input list', inputList)
+    Players = inputList
+    #for player in inputList:
+    #    Players.append(Player(player.name, player.x, player.y))
         #print('x:', inputList.item[i].x, 'y:', inputList.item[i].y)
     #print("Items:", Items)
     return Players
@@ -372,6 +374,7 @@ def drawBackground():
             #Map.get(R,C).tick()
 
 def EntityLoop():
+    global Players, name
     deleteItems = []
     for item in Items:
         image = sprite.Player(screen, (0,0,0), 50, item.x-scrollX+25, item.y-scrollY+25, True, 0, item.degrees)
@@ -385,6 +388,12 @@ def EntityLoop():
     for item in deleteItems:
         DeleteItemAsync(item)
         Items.remove(item)
+    for Player in Players:
+        if Player.name != name:
+            image = sprite.Sprite(screen, (0,0,0), 50, Player.x, Player.y)
+            image.updateImage()
+            sprite.text(str(Player.name), Player.x, Player.y+20)
+
     
 
 def move(keys):
