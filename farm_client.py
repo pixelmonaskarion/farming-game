@@ -24,7 +24,7 @@ import farmServerMethods_pb2_grpc
 
 import google
 import google.protobuf.json_format as json_format
-
+'24.16.205.170'
 global stub
 channel = grpc.insecure_channel('24.16.205.170:50051')
 stub = farmServerMethods_pb2_grpc.FarmingStub(channel)
@@ -48,8 +48,8 @@ def changeStuff(change=[farmServerMethods_pb2.MapUpdate(r=1,c=1, changedto=farmS
     #print(Map.block)
     return Map
 
-def GetMapAsync(Coords):
-    response_future = stub.GetMap.future(Coords)
+def GetMapAsync():
+    response_future = stub.GetMap.future(google.protobuf.empty_pb2.Empty())
     #response = response_future.result()
     return response_future
 
@@ -64,15 +64,16 @@ def GetPlayersAsync():
     return response_future
 
 def ChangeStuffAsync(change=[farmServerMethods_pb2.MapUpdate(r=1,c=1, changedto=farmServerMethods_pb2.Block(ID=1, Lvl=1))]):
+    print('send change')
     Map_future = stub.changeStuff.future(change)
     #print(Map.block)
     #print("sending change request")
     #response = response_future.result()
     return Map_future
 
-def GetMapSync(Coords):
+def GetMapSync():
     startTime = time.perf_counter_ns()
-    response_future = GetMapAsync(Coords)
+    response_future = GetMapAsync()
     response = response_future.result()
     print("took %f seconds" % ((time.perf_counter_ns() - startTime)/1.0e9))
     if (time.perf_counter_ns() - startTime)/1.0e9 > 1/60:

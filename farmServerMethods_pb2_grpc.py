@@ -17,7 +17,7 @@ class FarmingStub(object):
         """
         self.GetMap = channel.unary_unary(
                 '/farming.Farming/GetMap',
-                request_serializer=farmServerMethods__pb2.Coords.SerializeToString,
+                request_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
                 response_deserializer=farmServerMethods__pb2.Map.FromString,
                 )
         self.GetItems = channel.unary_unary(
@@ -102,7 +102,7 @@ def add_FarmingServicer_to_server(servicer, server):
     rpc_method_handlers = {
             'GetMap': grpc.unary_unary_rpc_method_handler(
                     servicer.GetMap,
-                    request_deserializer=farmServerMethods__pb2.Coords.FromString,
+                    request_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
                     response_serializer=farmServerMethods__pb2.Map.SerializeToString,
             ),
             'GetItems': grpc.unary_unary_rpc_method_handler(
@@ -157,7 +157,7 @@ class Farming(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/farming.Farming/GetMap',
-            farmServerMethods__pb2.Coords.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
             farmServerMethods__pb2.Map.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

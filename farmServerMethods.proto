@@ -5,7 +5,7 @@ import "google/protobuf/empty.proto";
 
 service Farming {
 
-  rpc GetMap(Coords) returns (Map) {}
+  rpc GetMap(google.protobuf.Empty) returns (Map) {}
 
   rpc GetItems(google.protobuf.Empty) returns (Items) {}
 
@@ -69,9 +69,5 @@ message MapUpdate {
     Block changedto = 3;
 }
 
-message Coords {
-  repeated int32 r = 1;
-  repeated int32 c = 2;
-}
 
 
