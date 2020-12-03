@@ -33,6 +33,7 @@ player.realX = player.x
 player.realY = player.y
 scrollX = 0
 scrollY = 0
+Map = grid.Grid(100,100)
 lock = 0
 Itemlock = 0
 Playerlock = 0
@@ -262,17 +263,10 @@ def setUpMap(inputMap, lx, ly):
     global Map
     local_map = grid.Grid(100,100)
     local_map.list = []
-    R = 0
-    C = 0
-    for i in range(10000):
-        if R in ly and C in lx:
-            local_map.list.append(Block(inputMap.block[i].block.ID, inputMap.block[i].block.Lvl))
-        else:
-            local_map.list.append(Map.get(R,C))
-        C += 1
-        if C > 99:
-            C = 0
-            R += 1
+    for block in Map.list:
+        local_map.list.append(block)
+    for block in inputMap.block:
+        local_map.change(block.r, block.c, Block(block.block.ID, block.block.Lvl))
     #print('done setting up map for {} blocks'.format(len(inputMap.block)))
     Map = local_map
     return Map
@@ -343,7 +337,7 @@ def drawBackground():
             if image.x > -50 and image.x < 1490 and image.y > -50 and image.y < 810:
                 #image = sprite.Sprite(screen, (0,0,0), 50,0,0)
                 #print(Map.get(R,C))
-                print(len(Map.list))
+                #print(len(Map.list))
                 if Map.get(R,C).ticks != 0:
                     image.image = blockTextures[str(blockIDs[Map.get(R,C).ID])+str(Map.get(R,C).lvl)]
                 else:
