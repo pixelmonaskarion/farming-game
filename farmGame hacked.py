@@ -37,7 +37,7 @@ lock = 0
 Itemlock = 0
 Playerlock = 0
 PlayerSendlock = 0
-name = os.environ.get("USER")
+name = "HACKED" #os.environ.get("USER")
 hotbarSlot = sprite.newImage('pointer.png')
 yellowPointer = sprite.newImage('yellowPointer.png')
 selectedSlot = 1
@@ -114,25 +114,11 @@ itemIDs = {
 
 }
 def GetMapAsync():
-    global lx, ly
     global lock
     if lock != 1:
         lock += 1
-        loadedx, loadedy = getChunks()
-        lx = loadedx
-        ly = loadedy
-        farm_client.GetMapAsync(farm_client.farmServerMethods_pb2.Coords(c=loadedx, r=loadedy)).add_done_callback(getMapCallBack)
+        farm_client.GetMapAsync().add_done_callback(getMapCallBack)
 
-def getChunks():
-    loadedBlockx = []
-    loadedBlocky = []
-    global Map
-    for R in range(100):
-        for C in range(100):
-            if C*50 > scrollX-770 and C*50 < scrollX+770 and R*50 > scrollY-430 and R*50 < scrollY+430:
-                loadedBlockx.append(C)
-                loadedBlocky.append(R)
-    return loadedBlockx, loadedBlockx
 def GetPlayersAsync():
     global Playerlock
     if Playerlock != 1:
@@ -146,9 +132,9 @@ def SendPlayerAsync():
         farm_client.SendPlayerAsync(Player(name, int(scrollX), int(scrollY))).add_done_callback(SendPlayerCallBack)
 
 def getMapCallBack(f):
-    global lock, lx, ly
+    global lock
     lock -= 1
-    setUpMap(f.result(), lx, ly)
+    setUpMap(f.result())
 
 def getPlayersCallBack(f):
     global Playerlock
@@ -163,6 +149,7 @@ def setUpPlayers(inputList):
     global Players
     #print('input list', inputList)
     Players = inputList.player
+    #print(Players)
     #for player in inputList:
     #    Players.append(Player(player.name, player.x, player.y))
         #print('x:', inputList.item[i].x, 'y:', inputList.item[i].y)
@@ -176,13 +163,8 @@ def getItemCallBack(f):
     Items = setUpItems(f.result())
 
 def GetMapSync():
-    loadedx = []
-    loadedy = []
-    for i in range(100):
-        loadedx.append(i)
-        loadedy.append(i)
-    result = farm_client.GetMapSync(farm_client.farmServerMethods_pb2.Coords(c=loadedx, r=loadedy))
-    setUpMap(result, loadedx, loadedy)
+    result = farm_client.GetMapSync()
+    setUpMap(result)
 
 def GetItemsAsync():
     global Itemlock
@@ -258,21 +240,12 @@ itemImages = {
     'lettuce': sprite.newImage('lettuceItem.png')
 }
 
-def setUpMap(inputMap, lx, ly):
+def setUpMap(inputMap):
     global Map
     local_map = grid.Grid(100,100)
     local_map.list = []
-    R = 0
-    C = 0
-    for i in range(10000):
-        if R in ly and C in lx:
-            local_map.list.append(Block(inputMap.block[i].block.ID, inputMap.block[i].block.Lvl))
-        else:
-            local_map.list.append(Map.get(R,C))
-        C += 1
-        if C > 99:
-            C = 0
-            R += 1
+    for i in range(len(inputMap.block)):
+        local_map.list.append(Block(inputMap.block[i].block.ID, inputMap.block[i].block.Lvl))
     #print('done setting up map for {} blocks'.format(len(inputMap.block)))
     Map = local_map
     return Map
@@ -343,7 +316,6 @@ def drawBackground():
             if image.x > -50 and image.x < 1490 and image.y > -50 and image.y < 810:
                 #image = sprite.Sprite(screen, (0,0,0), 50,0,0)
                 #print(Map.get(R,C))
-                print(len(Map.list))
                 if Map.get(R,C).ticks != 0:
                     image.image = blockTextures[str(blockIDs[Map.get(R,C).ID])+str(Map.get(R,C).lvl)]
                 else:
@@ -418,11 +390,14 @@ def EntityLoop():
     for item in deleteItems:
         DeleteItemAsync(item)
         Items.remove(item)
+    #print('Players:', Players)
+    print(Players)
     for Player in Players:
-        if Player.name != name:
-            image = sprite.Sprite(screen, (0,0,0), 50, Player.x-scrollX, Player.y-scrollY)
+        #if Player.name != name:
+            print(Player)
+            image = sprite.Sprite(screen, (0,0,0), 50, Player.x, Player.y)
             image.updateImage()
-            sprite.text(str(Player.name), Player.x-scrollX-((len(Player.name)*20)/2), Player.y-scrollY-40)
+            sprite.text(str(Player.name), Player.x, Player.y+20)
 
     
 

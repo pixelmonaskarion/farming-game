@@ -125,16 +125,20 @@ changeStarters()
 class FarmServer(farmServerMethods_pb2_grpc.FarmingServicer):
 
     def GetMap(self, request, context):
+        print(request)
         #print('GOT MAP')
         BlocksFromMap = []
         R = 0
         C = 0
+        i = 0
         for block in Map.list:
-            BlocksFromMap.append(farmServerMethods_pb2.SpecificBlock(r=R,c=C, block=farmServerMethods_pb2.Block(ID=block.ID, Lvl=block.lvl)))
+            if R in request.r and C in request.c:
+                BlocksFromMap.append(farmServerMethods_pb2.SpecificBlock(r=R,c=C, block=farmServerMethods_pb2.Block(ID=block.ID, Lvl=block.lvl)))
             C += 1
             if C > 99:
                 C = 0
                 R += 1
+            i += 1
         return farmServerMethods_pb2.Map(block=BlocksFromMap)
     
     def SendPlayer(self, request, context):
@@ -150,9 +154,9 @@ class FarmServer(farmServerMethods_pb2_grpc.FarmingServicer):
         return google.protobuf.empty_pb2.Empty()
     
     def PlayerLeave(self, request, context):
-        for check in Players:
-            if request.name == check.name:
-                Players.remove(check)
+        for i in range(len(Players)):
+            if request.name == Players[i].name:
+                Players.pop(i)
                 break
         return google.protobuf.empty_pb2.Empty()
     
@@ -166,32 +170,33 @@ class FarmServer(farmServerMethods_pb2_grpc.FarmingServicer):
 
     def changeStuff(self, changed, context):
         global Map
-        print("got", changed.changedto.ID, "current block is", Map.get(changed.r, changed.c).ID)
-        print("changing R: "+str(changed.r), 'C: ' + str(changed.c))
+        #print("got", changed.changedto.ID, "current block is", Map.get(changed.r, changed.c).ID)
+        #print("changing R: "+str(changed.r), 'C: ' + str(changed.c))
         ID = Map.get(changed.r, changed.c).ID
         if ID == 5 and changed.changedto.ID == 3:
             Map.change(changed.r, changed.c, Block(3))
-            print("action till grass")
+            #print("action till grass")
         elif ID == 5 and changed.changedto.ID == 2:
             Map.change(changed.r, changed.c, Block(2))
-            print("action plant bush")
+            #print("action plant bush")
         elif ID == 2 and changed.changedto.ID == 2:
             Map.change(changed.r, changed.c, Block(2))
             Items.append(DroppedItem(changed.c*50, changed.r*50, 3))
-            print("action get berries")
+            #print("action get berries")
         elif ID == 7 and changed.changedto.ID == 5:
-            print("action break lettuce")
+            #print("action break lettuce")
             Map.change(changed.r, changed.c, Block(5))
             Items.append(DroppedItem(changed.c*50, changed.r*50, 4))
         elif ID == 3 and changed.changedto.ID == 1:
             Map.change(changed.r, changed.c, Block(1))
-            print("action plant grass")
+            #print("action plant grass")
         elif ID == 6 and changed.changedto.ID == 5:
             Map.change(changed.r, changed.c, Block(5))
-            print("action break grass")
+            #print("action break grass")
             Items.append(DroppedItem(changed.c*50, changed.r*50, 1))
         else:
-            print("no action found :/")
+            pass
+            #print("no action found :/")
         MapOfBlocks = []
         for r in range(100):
             for c in range(100):
@@ -203,25 +208,25 @@ class FarmServer(farmServerMethods_pb2_grpc.FarmingServicer):
         for item in Items:
             Item = farmServerMethods_pb2.Item(ID=item.ID, x=item.x, y=item.y, ro=item.degrees)
             ItemList.append(Item)
-            print("x:", item.x, "y:", item.y)
+            #print("x:", item.x, "y:", item.y)
         return farmServerMethods_pb2.Items(item=ItemList)
     
     def DeleteItems(self, request, context):
         global Items
-        print("SIZE OF ITEMS BEFORE", len(Items))
+        #print("SIZE OF ITEMS BEFORE", len(Items))
         deleteItem = []
         y = request.y
         x = request.x
         ID = request.ID
         for check in Items:
-            print(x, y, check.x, check.y)
+            #print(x, y, check.x, check.y)
             if ID == check.ID and x == check.x and y == check.y:
-                print('found item to be deleted')
+                #print('found item to be deleted')
                 deleteItem.append(check)
                 break
         for item in deleteItem:
             Items.remove(item)
-        print("SIZE OF ITEMS AFTER", len(Items))
+        #print("SIZE OF ITEMS AFTER", len(Items))
         return request
 
 def serve():

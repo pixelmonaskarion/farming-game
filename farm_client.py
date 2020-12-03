@@ -48,8 +48,8 @@ def changeStuff(change=[farmServerMethods_pb2.MapUpdate(r=1,c=1, changedto=farmS
     #print(Map.block)
     return Map
 
-def GetMapAsync():
-    response_future = stub.GetMap.future(google.protobuf.empty_pb2.Empty())
+def GetMapAsync(Coords):
+    response_future = stub.GetMap.future(Coords)
     #response = response_future.result()
     return response_future
 
@@ -70,9 +70,9 @@ def ChangeStuffAsync(change=[farmServerMethods_pb2.MapUpdate(r=1,c=1, changedto=
     #response = response_future.result()
     return Map_future
 
-def GetMapSync():
+def GetMapSync(Coords):
     startTime = time.perf_counter_ns()
-    response_future = GetMapAsync()
+    response_future = GetMapAsync(Coords)
     response = response_future.result()
     print("took %f seconds" % ((time.perf_counter_ns() - startTime)/1.0e9))
     if (time.perf_counter_ns() - startTime)/1.0e9 > 1/60:
