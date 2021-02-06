@@ -130,7 +130,7 @@ def SendPlayerAsync():
     global PlayerSendlock
     if PlayerSendlock != 1:
         PlayerSendlock += 1
-        farm_client.SendPlayerAsync(Player(name, int(scrollX), int(scrollY))).add_done_callback(SendPlayerCallBack)
+        farm_client.SendPlayerAsync(Player(name, int(player.x-scrollX), int(player.y-scrollY))).add_done_callback(SendPlayerCallBack)
 
 def getMapCallBack(f):
     global lock
