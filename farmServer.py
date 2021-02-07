@@ -28,17 +28,42 @@ import google
 
 import time
 
+import atexit
+import file
+
 plantsTag = [1,2,7]
 plantTimes = [5000,5000,100 ]
 plantStages = [5,2,2]
-Players = []
+pd = file.decode("file.txt")
 Items = []
 
+def onExit():
+    file.delete("file.txt")
+    for p in Players:
+        file.add(p.name, str(p.x)+'-'+str(p.y), 'file.txt')
+    print("wrote to file.txt")
+atexit.register(onExit)
 class Player():
     def __init__(self, name, x, y):
         self.name = name
         self.x = x
         self.y = y
+
+Players = []
+print(pd)
+for player in pd.keys():
+    val = pd[player]
+    pos = ""
+    print("val"+val)
+    for char in val:
+        if char == '-':
+            pos = pos + " "
+        else:
+            pos = pos + char
+    print(pos)
+    pos = pos.split()
+    print(pos)
+    Players.append(Player(player, pos[0], pos[1]))
 
 class Block():
     def __init__(self,ID, lvl=1):

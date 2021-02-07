@@ -355,12 +355,13 @@ def drawBackground():
                                             inventory[selectedSlot].used()
                                             if inventory[selectedSlot].count < 1:
                                                 inventory[selectedSlot] = 0
-                                    if itemIDs[inventory[selectedSlot].ID] == 'lettuce':
-                                        if Map.get(R,C).ID == 5:
-                                            changeMap(R, C, Block(7, 1))
-                                            inventory[selectedSlot].used()
-                                            if inventory[selectedSlot].count < 1:
-                                                inventory[selectedSlot] = 0
+                                    if inventory[selectedSlot] != 0:            
+                                        if itemIDs[inventory[selectedSlot].ID] == 'lettuce':
+                                            if Map.get(R,C).ID == 5:
+                                                changeMap(R, C, Block(7, 1))
+                                                inventory[selectedSlot].used()
+                                                if inventory[selectedSlot].count < 1:
+                                                    inventory[selectedSlot] = 0
                         #print("right click!")
                         if pygame.mouse.get_pressed()[2] == 1:
                             #print("right click!")
