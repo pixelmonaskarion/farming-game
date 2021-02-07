@@ -12,7 +12,7 @@ def decode(filename):
             else:
                 name = name + char
         else:
-            if char == '§':
+            if char == '~':
                 d[name] = message
                 name = ""
                 message = ''
@@ -24,7 +24,7 @@ def decode(filename):
 
 def add(name, message, filename):
     f = open(filename, "a")
-    f.write(name+"§"+message)
+    f.write(name+" "+message+'~')
 
 def delete(filename):
     f = open(filename, "w")
