@@ -26,7 +26,7 @@ import google
 import google.protobuf.json_format as json_format
 '24.16.205.170'
 global stub
-channel = grpc.insecure_channel('24.16.205.170:50051')
+channel = grpc.insecure_channel('farm.themagicdoor.org:50051')
 stub = farmServerMethods_pb2_grpc.FarmingStub(channel)
 
 def generate_messages(message):
